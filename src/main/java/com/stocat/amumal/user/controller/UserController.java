@@ -10,6 +10,7 @@ import com.stocat.amumal.user.dto.UpdateProfileRequest;
 import com.stocat.amumal.user.dto.UpdateProfileResponse;
 import com.stocat.amumal.user.dto.UserResponse;
 import com.stocat.amumal.user.service.UserService;
+import com.stocat.amumal.user.usecase.DeleteUserUseCase;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -26,9 +27,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
+    private final DeleteUserUseCase deleteUserUseCase;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, DeleteUserUseCase deleteUserUseCase) {
         this.userService = userService;
+        this.deleteUserUseCase = deleteUserUseCase;
     }
 
     @PostMapping
@@ -71,6 +74,6 @@ public class UserController {
     @DeleteMapping("/{user_id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(@PathVariable("user_id") Long userId) {
-        userService.deleteUser(userId);
+        deleteUserUseCase.execute(userId);
     }
 }

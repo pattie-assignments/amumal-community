@@ -1,5 +1,6 @@
 package com.stocat.amumal.post.service;
 
+import com.stocat.amumal.common.DateTimeConstants;
 import com.stocat.amumal.common.exception.ApiException;
 import com.stocat.amumal.common.exception.ErrorCode;
 import com.stocat.amumal.post.domain.Post;
@@ -16,14 +17,10 @@ import com.stocat.amumal.user.domain.User;
 import com.stocat.amumal.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
 public class PostServiceImpl implements PostService {
-
-    private static final DateTimeFormatter DATE_TIME_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
@@ -69,7 +66,7 @@ public class PostServiceImpl implements PostService {
 
         List<PostSummaryResponse> postResponses = pagePosts.stream()
                 .map(post -> {
-                    // TODO: 목록 조회인데 게시글 작성자가 존재하지 않는 글이 존재한다고 ERR 발생하는 것이 맞는가 고민
+                    // 게시글 작성자가 존재하지 않는 글이 존재하는 것은 예외임, 잘못된 데이터임 -> 회원 탈퇴 시 게시글 삭제되기때문
                     User writer = userRepository.findById(post.getUserId())
                             .orElseThrow(() -> new ApiException(ErrorCode.POST_AUTHOR_NOT_FOUND));
 
@@ -77,7 +74,7 @@ public class PostServiceImpl implements PostService {
                             post.getId(),
                             post.getTitle(),
                             writer.getNickname(),
-                            post.getCreatedAt().format(DATE_TIME_FORMATTER),
+                            post.getCreatedAt().format(DateTimeConstants.DATE_TIME_FORMATTER),
                             post.getLikeCount(),
                             post.getCommentCount(),
                             post.getViewCount()
@@ -112,7 +109,7 @@ public class PostServiceImpl implements PostService {
                 post.getContent(),
                 post.getImage(),
                 writer.getNickname(),
-                post.getCreatedAt().format(DATE_TIME_FORMATTER),
+                post.getCreatedAt().format(DateTimeConstants.DATE_TIME_FORMATTER),
                 post.getViewCount(),
                 post.getLikeCount(),
                 post.getCommentCount(),

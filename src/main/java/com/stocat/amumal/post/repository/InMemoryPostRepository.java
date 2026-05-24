@@ -40,6 +40,11 @@ public class InMemoryPostRepository implements PostRepository {
     }
 
     @Override
+    public void deleteAllByUserId(Long userId) {
+        posts.values().removeIf(post -> post.getUserId().equals(userId));
+    }
+
+    @Override
     public List<Post> findAllByCursor(Long cursor, int size) {
         return posts.values().stream()
                 // 첫 조회면 전체를 대상으로 하고, 다음 조회면 cursor보다 작은 게시글만 조회

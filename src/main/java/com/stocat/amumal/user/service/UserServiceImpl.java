@@ -105,10 +105,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(Long userId) {
+    public void validateUserExists(Long userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
+    }
 
+    @Override
+    public void deleteUser(Long userId) {
         userRepository.deleteById(userId);
     }
 
@@ -122,7 +125,7 @@ public class UserServiceImpl implements UserService {
 
     private void validateLogin(LoginRequest request) {
         userValidator.validateEmail(request.email());
-        userValidator.validateRequiredPassword(request.password());
+        userValidator.validatePassword(request.password());
     }
 
     private void validateProfileUpdate(UpdateProfileRequest request, User user) {
@@ -149,6 +152,6 @@ public class UserServiceImpl implements UserService {
 
     private void validatePasswordUpdate(UpdatePasswordRequest request) {
         userValidator.validatePassword(request.password());
-        userValidator.validatePasswordConfirm(request.password(), request.passwordConfirm());
+        userValidator.validatePasswordUpdateConfirm(request.password(), request.passwordConfirm());
     }
 }

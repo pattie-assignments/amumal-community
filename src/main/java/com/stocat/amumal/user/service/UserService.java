@@ -21,5 +21,7 @@ public interface UserService {
 
     void updatePassword(Long userId, UpdatePasswordRequest request);
 
+    void validateUserExists(Long userId);
+
     void deleteUser(Long userId);
 }
