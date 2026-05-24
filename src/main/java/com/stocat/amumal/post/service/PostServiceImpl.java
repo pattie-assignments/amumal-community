@@ -5,15 +5,18 @@ import com.stocat.amumal.post.domain.Post;
 import com.stocat.amumal.post.dto.CreatePostRequest;
 import com.stocat.amumal.post.dto.CreatePostResponse;
 import com.stocat.amumal.post.dto.GetPostResponse;
+import com.stocat.amumal.post.dto.GetPostsResponse;
+import com.stocat.amumal.post.dto.PostSummaryResponse;
 import com.stocat.amumal.post.dto.UpdatePostRequest;
 import com.stocat.amumal.post.dto.UpdatePostResponse;
-import com.stocat.amumal.user.domain.User;
 import com.stocat.amumal.post.repository.PostRepository;
+import com.stocat.amumal.user.domain.User;
 import com.stocat.amumal.user.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -54,7 +57,46 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public GetPostsResponse getPosts(Long cursor, int size) {
+        validateListRequest(size);
+
+        // 다음 페이지 존재 여부를 확인하기 위해 요청 개수보다 1개 더 조회
+        List<Post> posts = postRepository.findAllByCursor(cursor, size + 1);
+        // 조회 결과가 요청 개수보다 많으면 다음 페이지가 존재
+        boolean hasNext = posts.size() > size;
+        // 응답에는 요청한 개수만 전달, 초과 1개는 hasNext 판단에만 사용
+        List<Post> pagePosts = hasNext ? posts.subList(0, size) : posts;
+
+        List<PostSummaryResponse> postResponses = pagePosts.stream()
+                .map(post -> {
+                    // TODO: 목록 조회인데 게시글 작성자가 존재하지 않는 글이 존재한다고 ERR 발생하는 것이 맞는가 고민
+                    User writer = userRepository.findById(post.getUserId())
+                            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."));
+
+                    return new PostSummaryResponse(
+                            post.getId(),
+                            post.getTitle(),
+                            writer.getNickname(),
+                            post.getCreatedAt().format(DATE_TIME_FORMATTER),
+                            post.getLikeCount(),
+                            post.getCommentCount(),
+                            post.getViewCount()
+                    );
+                })
+                .toList();
+
+        // 다음 값이 존재하고, 현재 게시글 목록 반환값이 null 이 아니라면 다음 커서 값을 제공
+        Long nextCursor = hasNext && !pagePosts.isEmpty()
+                ? pagePosts.get(pagePosts.size() - 1).getId()
+                : null;
+
+        return new GetPostsResponse(postResponses, hasNext, nextCursor);
+    }
+
+    @Override
     public GetPostResponse getPost(Long postId, Long userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."));
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
@@ -116,6 +158,12 @@ public class PostServiceImpl implements PostService {
 
         if (request.title().trim().length() > 26) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "제목은 최대 26자까지 작성 가능합니다.");
+        }
+    }
+
+    private void validateListRequest(int size) {
+        if (size <= 0) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "size는 1 이상이어야 합니다.");
         }
     }
 

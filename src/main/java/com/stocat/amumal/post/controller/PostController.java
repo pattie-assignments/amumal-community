@@ -4,6 +4,7 @@ import com.stocat.amumal.common.response.ApiResponse;
 import com.stocat.amumal.post.dto.CreatePostRequest;
 import com.stocat.amumal.post.dto.CreatePostResponse;
 import com.stocat.amumal.post.dto.GetPostResponse;
+import com.stocat.amumal.post.dto.GetPostsResponse;
 import com.stocat.amumal.post.dto.UpdatePostRequest;
 import com.stocat.amumal.post.dto.UpdatePostResponse;
 import com.stocat.amumal.post.service.PostService;
@@ -32,6 +33,15 @@ public class PostController {
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<CreatePostResponse> createPost(@RequestBody CreatePostRequest request) {
         return ApiResponse.of("게시글이 생성되었습니다.", postService.createPost(request));
+    }
+
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<GetPostsResponse> getPosts(
+            @RequestParam(value = "cursor", required = false) Long cursor, // 필수가 아님
+            @RequestParam(value = "size", defaultValue = "10") int size // 기본값 10
+    ) {
+        return ApiResponse.of("게시글 목록 조회에 성공했습니다.", postService.getPosts(cursor, size));
     }
 
     @GetMapping("/{post_id}")

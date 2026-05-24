@@ -3,7 +3,9 @@ package com.stocat.amumal.post.repository;
 import com.stocat.amumal.post.domain.Post;
 import org.springframework.stereotype.Repository;
 
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -35,5 +37,17 @@ public class InMemoryPostRepository implements PostRepository {
     @Override
     public Optional<Post> findById(Long postId) {
         return Optional.ofNullable(posts.get(postId));
+    }
+
+    @Override
+    public List<Post> findAllByCursor(Long cursor, int size) {
+        return posts.values().stream()
+                // 첫 조회면 전체를 대상으로 하고, 다음 조회면 cursor보다 작은 게시글만 조회
+                .filter(post -> cursor == null || post.getId() < cursor)
+                // postId 기준 내림차순으로 정렬 (id값은 작성 순서대로 증가함)
+                .sorted(Comparator.comparing(Post::getId).reversed())
+                // 요청한 개수만큼만 잘라서 반환
+                .limit(size)
+                .toList();
     }
 }
