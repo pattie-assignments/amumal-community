@@ -47,13 +47,12 @@ public class UserServiceImpl implements UserService {
         }
 
         // 회원 데이터 저장
-        User savedUser = userRepository.save(new User(
-                null,
+        User savedUser = userRepository.save(
                 request.email().trim(),
                 request.password(),
                 request.nickname().trim(),
                 request.profileImage().trim()
-        ));
+        );
 
         return new SignUpResponse(savedUser.getId());
     }
@@ -92,16 +91,10 @@ public class UserServiceImpl implements UserService {
 
         validateProfileUpdate(request, user);
 
-        // null이 아니라면(수정할 데이터를 받았다면) 수정
-        if (request.nickname() != null) {
-            user.setNickname(request.nickname().trim());
-        }
+        String nickname = request.nickname() == null ? user.getNickname() : request.nickname().trim();
+        String profileImage = request.profileImage() == null ? user.getProfileImage() : request.profileImage().trim();
 
-        if (request.profileImage() != null) {
-            user.setProfileImage(request.profileImage().trim());
-        }
-
-        User updatedUser = userRepository.save(user);
+        User updatedUser = userRepository.updateProfile(userId, nickname, profileImage);
 
         return new UpdateProfileResponse(
                 updatedUser.getId(),
@@ -119,8 +112,7 @@ public class UserServiceImpl implements UserService {
         // 비밀번호 업데이트를 위한 조건을 충족하는가? (비밀번호 형식, 중복 입력 성공 여부)
         validatePasswordUpdate(request);
 
-        user.setPassword(request.password());
-        userRepository.save(user);
+        userRepository.updatePassword(userId, request.password());
     }
 
     @Override

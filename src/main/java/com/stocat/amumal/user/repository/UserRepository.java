@@ -7,7 +7,11 @@ import java.util.Optional;
 // 저장소 접근 메서드 정의
 public interface UserRepository {
 
-    User save(User user);
+    User save(String email, String password, String nickname, String profileImage);
+
+    User updateProfile(Long userId, String nickname, String profileImage);
+
+    User updatePassword(Long userId, String password);
 
     boolean existsByEmail(String email);
 

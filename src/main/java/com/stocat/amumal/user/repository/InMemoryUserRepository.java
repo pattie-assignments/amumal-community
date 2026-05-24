@@ -14,12 +14,25 @@ public class InMemoryUserRepository implements UserRepository {
     private final Map<Long, User> users = new HashMap<>();
 
     @Override
-    public User save(User user) {
-        // id값 전달 받으면 사용, 미전달 받으면 기존에 머지막으로 생성된 id값에서 +1한 값을 사용
-        long id = user.getId() == null ? ++sequence : user.getId();
-        User savedUser = new User(id, user.getEmail(), user.getPassword(), user.getNickname(), user.getProfileImage());
+    public User save(String email, String password, String nickname, String profileImage) {
+        long id = ++sequence;
+        User savedUser = new User(id, email, password, nickname, profileImage);
         users.put(id, savedUser);
         return savedUser;
+    }
+
+    @Override
+    public User updateProfile(Long userId, String nickname, String profileImage) {
+        User existingUser = users.get(userId);
+        existingUser.updateProfile(nickname, profileImage);
+        return existingUser;
+    }
+
+    @Override
+    public User updatePassword(Long userId, String password) {
+        User existingUser = users.get(userId);
+        existingUser.updatePassword(password);
+        return existingUser;
     }
 
     @Override

@@ -37,15 +37,12 @@ public class User {
         return profileImage;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public void setNickname(String nickname) {
+    public void updateProfile(String nickname, String profileImage) {
         this.nickname = nickname;
+        this.profileImage = profileImage;
     }
 
-    public void setProfileImage(String profileImage) {
-        this.profileImage = profileImage;
+    public void updatePassword(String password) {
+        this.password = password;
     }
 }
