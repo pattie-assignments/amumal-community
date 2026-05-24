@@ -4,6 +4,8 @@ import com.stocat.amumal.common.exception.ApiException;
 import com.stocat.amumal.post.domain.Post;
 import com.stocat.amumal.post.dto.CreatePostRequest;
 import com.stocat.amumal.post.dto.CreatePostResponse;
+import com.stocat.amumal.post.dto.UpdatePostRequest;
+import com.stocat.amumal.post.dto.UpdatePostResponse;
 import com.stocat.amumal.post.repository.PostRepository;
 import com.stocat.amumal.user.repository.UserRepository;
 import org.springframework.http.HttpStatus;
@@ -46,6 +48,31 @@ public class PostServiceImpl implements PostService {
         );
     }
 
+    @Override
+    public UpdatePostResponse updatePost(Long postId, UpdatePostRequest request) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
+
+        validateUpdateRequest(request);
+
+        if (!post.getUserId().equals(request.userId())) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "게시글 작성자만 수정할 수 있습니다.");
+        }
+
+        post.setTitle(request.title().trim());
+        post.setContent(request.content().trim());
+        post.setImage(request.image() == null ? null : request.image().trim());
+
+        Post updatedPost = postRepository.update(post);
+
+        return new UpdatePostResponse(
+                updatedPost.getId(),
+                updatedPost.getTitle(),
+                updatedPost.getContent(),
+                updatedPost.getImage()
+        );
+    }
+
     private void validate(CreatePostRequest request) {
         if (request.userId() == null) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "회원을 찾을 수 없습니다.");
@@ -57,6 +84,24 @@ public class PostServiceImpl implements PostService {
 
         if (request.title().trim().length() > 26) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "제목은 최대 26자까지 작성 가능합니다.");
+        }
+    }
+
+    private void validateUpdateRequest(UpdatePostRequest request) {
+        if (isBlank(request.title())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "제목을 입력해주세요.");
+        }
+
+        if (request.title().trim().length() > 26) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "제목은 최대 26자까지 작성 가능합니다.");
+        }
+
+        if (isBlank(request.content())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "내용을 입력해주세요.");
+        }
+
+        if (request.image() != null && request.image().contains(",")) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "이미지 파일은 1개만 업로드할 수 있습니다.");
         }
     }
 

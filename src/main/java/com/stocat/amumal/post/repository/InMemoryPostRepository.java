@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 public class InMemoryPostRepository implements PostRepository {
@@ -21,5 +22,19 @@ public class InMemoryPostRepository implements PostRepository {
         // post 저장
         posts.put(id, savedPost);
         return savedPost;
+    }
+
+    @Override
+    public Post update(Post post) {
+        Post existingPost = posts.get(post.getId());
+        existingPost.setTitle(post.getTitle());
+        existingPost.setContent(post.getContent());
+        existingPost.setImage(post.getImage());
+        return existingPost;
+    }
+
+    @Override
+    public Optional<Post> findById(Long postId) {
+        return Optional.ofNullable(posts.get(postId));
     }
 }
