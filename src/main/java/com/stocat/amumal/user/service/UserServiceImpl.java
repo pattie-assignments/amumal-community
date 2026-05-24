@@ -1,6 +1,8 @@
 package com.stocat.amumal.user.service;
 
 import com.stocat.amumal.user.domain.User;
+import com.stocat.amumal.user.dto.LoginRequest;
+import com.stocat.amumal.user.dto.LoginResponse;
 import com.stocat.amumal.user.dto.SignUpRequest;
 import com.stocat.amumal.user.dto.SignUpResponse;
 import com.stocat.amumal.user.exception.ApiException;
@@ -50,6 +52,20 @@ public class UserServiceImpl implements UserService {
         return new SignUpResponse(savedUser.id());
     }
 
+    @Override
+    public LoginResponse login(LoginRequest request) {
+        validateLogin(request);
+
+        User user = userRepository.findByEmail(request.email().trim())
+                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다."));
+
+        if (!user.password().equals(request.password())) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다.");
+        }
+
+        return new LoginResponse(user.id());
+    }
+
     private void validate(SignUpRequest request) {
         if (isBlank(request.email())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "이메일을 입력해주세요.");
@@ -89,6 +105,20 @@ public class UserServiceImpl implements UserService {
 
         if (isBlank(request.profileImage())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "프로필 사진을 추가해주세요.");
+        }
+    }
+
+    private void validateLogin(LoginRequest request) {
+        if (isBlank(request.email())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "이메일을 입력해주세요.");
+        }
+
+        if (!EMAIL_PATTERN.matcher(request.email().trim()).matches()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "올바른 이메일 주소 형식을 입력해주세요. (예: example@adapterz.kr)");
+        }
+
+        if (isBlank(request.password())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "비밀번호를 입력해주세요.");
         }
     }
 

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 public class InMemoryUserRepository implements UserRepository {
@@ -32,5 +33,12 @@ public class InMemoryUserRepository implements UserRepository {
         // 입력한 nickname 을 가진 유저가 하나라도 인메모리에 존재하면 true를 반환
         return users.values().stream()
                 .anyMatch(user -> user.nickname().equals(nickname));
+    }
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return users.values().stream()
+                .filter(user -> user.email().equals(email))
+                .findFirst();
     }
 }
