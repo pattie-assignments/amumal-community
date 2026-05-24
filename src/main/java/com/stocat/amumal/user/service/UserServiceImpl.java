@@ -1,11 +1,11 @@
 package com.stocat.amumal.user.service;
 
+import com.stocat.amumal.common.exception.ApiException;
 import com.stocat.amumal.user.domain.User;
 import com.stocat.amumal.user.dto.LoginRequest;
 import com.stocat.amumal.user.dto.LoginResponse;
 import com.stocat.amumal.user.dto.SignUpRequest;
 import com.stocat.amumal.user.dto.SignUpResponse;
-import com.stocat.amumal.user.exception.ApiException;
 import com.stocat.amumal.user.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

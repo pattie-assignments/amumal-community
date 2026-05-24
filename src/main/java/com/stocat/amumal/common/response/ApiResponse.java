@@ -1,4 +1,4 @@
-package com.stocat.amumal.user.dto;
+package com.stocat.amumal.common.response;
 
 public record ApiResponse<T>(
         String message,

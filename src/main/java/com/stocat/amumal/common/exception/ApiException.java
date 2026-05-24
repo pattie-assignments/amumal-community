@@ -1,4 +1,4 @@
-package com.stocat.amumal.user.exception;
+package com.stocat.amumal.common.exception;
 
 import org.springframework.http.HttpStatus;
 

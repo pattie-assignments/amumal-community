@@ -1,7 +1,6 @@
-package com.stocat.amumal.user.controller;
+package com.stocat.amumal.common.exception;
 
-import com.stocat.amumal.user.dto.ApiResponse;
-import com.stocat.amumal.user.exception.ApiException;
+import com.stocat.amumal.common.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

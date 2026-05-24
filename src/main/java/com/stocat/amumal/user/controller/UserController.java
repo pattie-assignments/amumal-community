@@ -1,6 +1,6 @@
 package com.stocat.amumal.user.controller;
 
-import com.stocat.amumal.user.dto.ApiResponse;
+import com.stocat.amumal.common.response.ApiResponse;
 import com.stocat.amumal.user.dto.LoginRequest;
 import com.stocat.amumal.user.dto.LoginResponse;
 import com.stocat.amumal.user.dto.SignUpRequest;
