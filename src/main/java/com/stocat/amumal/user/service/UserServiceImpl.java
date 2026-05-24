@@ -1,6 +1,7 @@
 package com.stocat.amumal.user.service;
 
 import com.stocat.amumal.common.exception.ApiException;
+import com.stocat.amumal.common.exception.ErrorCode;
 import com.stocat.amumal.user.domain.User;
 import com.stocat.amumal.user.dto.LoginRequest;
 import com.stocat.amumal.user.dto.LoginResponse;
@@ -12,7 +13,6 @@ import com.stocat.amumal.user.dto.UpdateProfileResponse;
 import com.stocat.amumal.user.dto.UserResponse;
 import com.stocat.amumal.user.repository.UserRepository;
 import com.stocat.amumal.user.validator.UserValidator;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,19 +28,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public SignUpResponse signUp(SignUpRequest request) {
-        // 데이터 형식, 존재 여부와 같은 유효성 검증
         validateSignUp(request);
 
-        // 중복 데이터 검증
         if (userRepository.existsByEmail(request.email().trim())) {
-            throw new ApiException(HttpStatus.CONFLICT, "중복된 이메일 입니다.");
+            throw new ApiException(ErrorCode.DUPLICATE_EMAIL);
         }
 
         if (userRepository.existsByNickname(request.nickname().trim())) {
-            throw new ApiException(HttpStatus.CONFLICT, "중복된 닉네임 입니다.");
+            throw new ApiException(ErrorCode.DUPLICATE_NICKNAME);
         }
 
-        // 회원 데이터 저장
         User savedUser = userRepository.save(
                 request.email().trim(),
                 request.password(),
@@ -56,10 +53,10 @@ public class UserServiceImpl implements UserService {
         validateLogin(request);
 
         User user = userRepository.findByEmail(request.email().trim())
-                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.INVALID_CREDENTIALS));
 
         if (!user.getPassword().equals(request.password())) {
-            throw new ApiException(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다.");
+            throw new ApiException(ErrorCode.INVALID_CREDENTIALS);
         }
 
         return new LoginResponse(user.getId());
@@ -68,7 +65,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse getUser(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
 
         return new UserResponse(
                 user.getId(),
@@ -81,7 +78,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UpdateProfileResponse updateProfile(Long userId, UpdateProfileRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
 
         validateProfileUpdate(request, user);
 
@@ -99,11 +96,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updatePassword(Long userId, UpdatePasswordRequest request) {
-        // 비밀번호 업데이트 하려는 유저가 존재하는가?
         userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
 
-        // 비밀번호 업데이트를 위한 조건을 충족하는가? (비밀번호 형식, 중복 입력 성공 여부)
         validatePasswordUpdate(request);
 
         userRepository.updatePassword(userId, request.password());
@@ -111,9 +106,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long userId) {
-        // 삭제할 유저 id가 데이터베이스에 존재하지 않으면 예외
         userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
 
         userRepository.deleteById(userId);
     }
@@ -121,7 +115,7 @@ public class UserServiceImpl implements UserService {
     private void validateSignUp(SignUpRequest request) {
         userValidator.validateEmail(request.email());
         userValidator.validatePassword(request.password());
-        userValidator.validatePasswordConfirm(request.password(), request.passwordConfirm(), "비밀번호를 한번더 입력해주세요.", "비밀번호가 다릅니다.");
+        userValidator.validatePasswordConfirm(request.password(), request.passwordConfirm());
         userValidator.validateNickname(request.nickname());
         userValidator.validateRequiredProfileImage(request.profileImage());
     }
@@ -136,7 +130,7 @@ public class UserServiceImpl implements UserService {
         boolean hasProfileImage = request.profileImage() != null;
 
         if (!hasNickname && !hasProfileImage) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "닉네임 또는 프로필 이미지를 입력해주세요.");
+            throw new ApiException(ErrorCode.MISSING_PROFILE_UPDATE_FIELD);
         }
 
         if (hasNickname) {
@@ -144,11 +138,9 @@ public class UserServiceImpl implements UserService {
             userValidator.validateNickname(request.nickname());
 
             if (!nickname.equals(user.getNickname()) && userRepository.existsByNickname(nickname)) {
-                throw new ApiException(HttpStatus.CONFLICT, "중복된 닉네임 입니다.");
+                throw new ApiException(ErrorCode.DUPLICATE_NICKNAME);
             }
         }
-
-        // 문자열 정보만 전달받으므로 파일의 실제 크기가 N mb 이하만 가능하다는 것을 검증할 수 없다.
 
         if (hasProfileImage) {
             userValidator.validateOptionalProfileImage(request.profileImage());
@@ -157,6 +149,6 @@ public class UserServiceImpl implements UserService {
 
     private void validatePasswordUpdate(UpdatePasswordRequest request) {
         userValidator.validatePassword(request.password());
-        userValidator.validatePasswordConfirm(request.password(), request.passwordConfirm(), "비밀번호를 한번 더 입력해주세요", "비밀번호 확인과 다릅니다.");
+        userValidator.validatePasswordConfirm(request.password(), request.passwordConfirm());
     }
 }
