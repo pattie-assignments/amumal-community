@@ -10,6 +10,7 @@ import com.stocat.amumal.post.dto.PostSummaryResponse;
 import com.stocat.amumal.post.dto.UpdatePostRequest;
 import com.stocat.amumal.post.dto.UpdatePostResponse;
 import com.stocat.amumal.post.repository.PostRepository;
+import com.stocat.amumal.post.validator.PostValidator;
 import com.stocat.amumal.user.domain.User;
 import com.stocat.amumal.user.repository.UserRepository;
 import org.springframework.http.HttpStatus;
@@ -26,15 +27,17 @@ public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final PostValidator postValidator;
 
-    public PostServiceImpl(PostRepository postRepository, UserRepository userRepository) {
+    public PostServiceImpl(PostRepository postRepository, UserRepository userRepository, PostValidator postValidator) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
+        this.postValidator = postValidator;
     }
 
     @Override
     public CreatePostResponse createPost(CreatePostRequest request) {
-        validate(request);
+        postValidator.validateCreatePost(request);
 
         // 작성자 id가 없는 경우
         userRepository.findById(request.userId())
@@ -58,7 +61,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public GetPostsResponse getPosts(Long cursor, int size) {
-        validateListRequest(size);
+        postValidator.validateListSize(size);
 
         // 다음 페이지 존재 여부를 확인하기 위해 요청 개수보다 1개 더 조회
         List<Post> posts = postRepository.findAllByCursor(cursor, size + 1);
@@ -127,7 +130,7 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
 
-        validateUpdateRequest(request);
+        postValidator.validateUpdatePost(request);
 
         if (!post.getUserId().equals(request.userId())) {
             throw new ApiException(HttpStatus.FORBIDDEN, "게시글 작성자만 수정할 수 있습니다.");
@@ -147,45 +150,4 @@ public class PostServiceImpl implements PostService {
         );
     }
 
-    private void validate(CreatePostRequest request) {
-        if (request.userId() == null) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "회원을 찾을 수 없습니다.");
-        }
-
-        if (isBlank(request.title()) || isBlank(request.content())) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "제목, 내용을 모두 작성해주세요.");
-        }
-
-        if (request.title().trim().length() > 26) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "제목은 최대 26자까지 작성 가능합니다.");
-        }
-    }
-
-    private void validateListRequest(int size) {
-        if (size <= 0) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "size는 1 이상이어야 합니다.");
-        }
-    }
-
-    private void validateUpdateRequest(UpdatePostRequest request) {
-        if (isBlank(request.title())) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "제목을 입력해주세요.");
-        }
-
-        if (request.title().trim().length() > 26) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "제목은 최대 26자까지 작성 가능합니다.");
-        }
-
-        if (isBlank(request.content())) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "내용을 입력해주세요.");
-        }
-
-        if (request.image() != null && request.image().contains(",")) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "이미지 파일은 1개만 업로드할 수 있습니다.");
-        }
-    }
-
-    private boolean isBlank(String value) {
-        return value == null || value.trim().isEmpty();
-    }
 }
