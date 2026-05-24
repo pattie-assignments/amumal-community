@@ -4,6 +4,7 @@ import com.stocat.amumal.user.dto.LoginRequest;
 import com.stocat.amumal.user.dto.LoginResponse;
 import com.stocat.amumal.user.dto.SignUpRequest;
 import com.stocat.amumal.user.dto.SignUpResponse;
+import com.stocat.amumal.user.dto.UpdatePasswordRequest;
 import com.stocat.amumal.user.dto.UpdateProfileRequest;
 import com.stocat.amumal.user.dto.UpdateProfileResponse;
 import com.stocat.amumal.user.dto.UserResponse;
@@ -17,4 +18,6 @@ public interface UserService {
     UserResponse getUser(Long userId);
 
     UpdateProfileResponse updateProfile(Long userId, UpdateProfileRequest request);
+
+    void updatePassword(Long userId, UpdatePasswordRequest request);
 }

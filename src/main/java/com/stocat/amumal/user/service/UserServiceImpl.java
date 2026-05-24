@@ -6,6 +6,7 @@ import com.stocat.amumal.user.dto.LoginRequest;
 import com.stocat.amumal.user.dto.LoginResponse;
 import com.stocat.amumal.user.dto.SignUpRequest;
 import com.stocat.amumal.user.dto.SignUpResponse;
+import com.stocat.amumal.user.dto.UpdatePasswordRequest;
 import com.stocat.amumal.user.dto.UpdateProfileRequest;
 import com.stocat.amumal.user.dto.UpdateProfileResponse;
 import com.stocat.amumal.user.dto.UserResponse;
@@ -109,6 +110,24 @@ public class UserServiceImpl implements UserService {
         );
     }
 
+    @Override
+    public void updatePassword(Long userId, UpdatePasswordRequest request) {
+        // 비밀번호 업데이트 하려는 유저가 존재하는가?
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."));
+
+        // 비밀번호 업데이트를 위한 조건을 충족하는가? (비밀번호 형식, 중복 입력 성공 여부)
+        validatePasswordUpdate(request);
+
+        userRepository.save(new User(
+                user.id(),
+                user.email(),
+                request.password(),
+                user.nickname(),
+                user.profileImage()
+        ));
+    }
+
     private void validate(SignUpRequest request) {
         if (isBlank(request.email())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "이메일을 입력해주세요.");
@@ -195,6 +214,24 @@ public class UserServiceImpl implements UserService {
             if (isBlank(request.profileImage()) || !IMAGE_FILE_PATTERN.matcher(request.profileImage().trim()).matches()) {
                 throw new ApiException(HttpStatus.BAD_REQUEST, "유효한 파일이 아닙니다.(올바른 사진 확장자가 아닐 경우)");
             }
+        }
+    }
+
+    private void validatePasswordUpdate(UpdatePasswordRequest request) {
+        if (isBlank(request.password())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "비밀번호를 입력해주세요");
+        }
+
+        if (!PASSWORD_PATTERN.matcher(request.password()).matches()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "비밀번호는 8자 이상, 20자 이하이며, 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 포함해야 합니다.");
+        }
+
+        if (isBlank(request.passwordConfirm())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "비밀번호를 한번 더 입력해주세요");
+        }
+
+        if (!request.password().equals(request.passwordConfirm())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "비밀번호 확인과 다릅니다.");
         }
     }
 

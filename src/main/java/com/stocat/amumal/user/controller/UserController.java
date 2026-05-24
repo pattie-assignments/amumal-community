@@ -5,6 +5,7 @@ import com.stocat.amumal.user.dto.LoginRequest;
 import com.stocat.amumal.user.dto.LoginResponse;
 import com.stocat.amumal.user.dto.SignUpRequest;
 import com.stocat.amumal.user.dto.SignUpResponse;
+import com.stocat.amumal.user.dto.UpdatePasswordRequest;
 import com.stocat.amumal.user.dto.UpdateProfileRequest;
 import com.stocat.amumal.user.dto.UpdateProfileResponse;
 import com.stocat.amumal.user.dto.UserResponse;
@@ -54,5 +55,15 @@ public class UserController {
             @RequestBody UpdateProfileRequest request
     ) {
         return ApiResponse.of("수정 완료", userService.updateProfile(userId, request));
+    }
+
+    @PatchMapping("/{user_id}/password")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<Void> updatePassword(
+            @PathVariable("user_id") Long userId,
+            @RequestBody UpdatePasswordRequest request
+    ) {
+        userService.updatePassword(userId, request);
+        return ApiResponse.of("수정 완료", null);
     }
 }
