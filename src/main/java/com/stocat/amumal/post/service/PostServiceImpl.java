@@ -4,15 +4,22 @@ import com.stocat.amumal.common.exception.ApiException;
 import com.stocat.amumal.post.domain.Post;
 import com.stocat.amumal.post.dto.CreatePostRequest;
 import com.stocat.amumal.post.dto.CreatePostResponse;
+import com.stocat.amumal.post.dto.GetPostResponse;
 import com.stocat.amumal.post.dto.UpdatePostRequest;
 import com.stocat.amumal.post.dto.UpdatePostResponse;
+import com.stocat.amumal.user.domain.User;
 import com.stocat.amumal.post.repository.PostRepository;
 import com.stocat.amumal.user.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.format.DateTimeFormatter;
+
 @Service
 public class PostServiceImpl implements PostService {
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
@@ -43,6 +50,33 @@ public class PostServiceImpl implements PostService {
                 savedPost.getTitle(),
                 savedPost.getContent(),
                 savedPost.getImage()
+        );
+    }
+
+    @Override
+    public GetPostResponse getPost(Long postId, Long userId) {
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
+
+        // TODO: 에러 메세지가 불명확한 것 같음 (게시글 작성자가 없습니다로 수정 필요)
+        User writer = userRepository.findById(post.getUserId())
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."));
+
+        post.increaseViewCount();
+
+        return new GetPostResponse(
+                post.getId(),
+                post.getUserId(),
+                post.getTitle(),
+                post.getContent(),
+                post.getImage(),
+                writer.getNickname(),
+                post.getCreatedAt().format(DATE_TIME_FORMATTER),
+                post.getViewCount(),
+                post.getLikeCount(),
+                post.getCommentCount(),
+                false
         );
     }
 
