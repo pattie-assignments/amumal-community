@@ -1,0 +1,13 @@
+package com.stocat.amumal.user.repository;
+
+import com.stocat.amumal.user.domain.User;
+
+// 저장소 접근 메서드 정의
+public interface UserRepository {
+
+    User save(User user);
+
+    boolean existsByEmail(String email);
+
+    boolean existsByNickname(String nickname);
+}
