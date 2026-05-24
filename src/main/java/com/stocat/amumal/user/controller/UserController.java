@@ -5,9 +5,12 @@ import com.stocat.amumal.user.dto.LoginRequest;
 import com.stocat.amumal.user.dto.LoginResponse;
 import com.stocat.amumal.user.dto.SignUpRequest;
 import com.stocat.amumal.user.dto.SignUpResponse;
+import com.stocat.amumal.user.dto.UpdateProfileRequest;
+import com.stocat.amumal.user.dto.UpdateProfileResponse;
 import com.stocat.amumal.user.dto.UserResponse;
 import com.stocat.amumal.user.service.UserService;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,5 +45,14 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<UserResponse> getUser(@PathVariable("user_id") Long userId) {
         return ApiResponse.of("회원정보 조회에 성공했습니다.", userService.getUser(userId));
+    }
+
+    @PatchMapping("/{user_id}/profile")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<UpdateProfileResponse> updateProfile(
+            @PathVariable("user_id") Long userId,
+            @RequestBody UpdateProfileRequest request
+    ) {
+        return ApiResponse.of("수정 완료", userService.updateProfile(userId, request));
     }
 }
