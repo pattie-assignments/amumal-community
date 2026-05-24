@@ -10,6 +10,7 @@ import com.stocat.amumal.user.dto.UpdateProfileRequest;
 import com.stocat.amumal.user.dto.UpdateProfileResponse;
 import com.stocat.amumal.user.dto.UserResponse;
 import com.stocat.amumal.user.service.UserService;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -65,5 +66,11 @@ public class UserController {
     ) {
         userService.updatePassword(userId, request);
         return ApiResponse.of("수정 완료", null);
+    }
+
+    @DeleteMapping("/{user_id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(@PathVariable("user_id") Long userId) {
+        userService.deleteUser(userId);
     }
 }

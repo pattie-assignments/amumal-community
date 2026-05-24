@@ -48,4 +48,9 @@ public class InMemoryUserRepository implements UserRepository {
         // 존재하지 않으면 null, 회원이 존재하는 경우에만 User 데이터를 반환합니다.
         return Optional.ofNullable(users.get(userId));
     }
+
+    @Override
+    public void deleteById(Long userId) {
+        users.remove(userId);
+    }
 }

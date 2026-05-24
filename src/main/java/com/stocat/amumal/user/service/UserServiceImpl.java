@@ -123,6 +123,15 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    @Override
+    public void deleteUser(Long userId) {
+        // 삭제할 유저 id가 데이터베이스에 존재하지 않으면 예외
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."));
+
+        userRepository.deleteById(userId);
+    }
+
     private void validate(SignUpRequest request) {
         if (isBlank(request.email())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "이메일을 입력해주세요.");

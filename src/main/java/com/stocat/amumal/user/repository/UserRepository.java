@@ -16,4 +16,6 @@ public interface UserRepository {
     Optional<User> findByEmail(String email);
 
     Optional<User> findById(Long userId);
+
+    void deleteById(Long userId);
 }
