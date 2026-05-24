@@ -6,6 +6,7 @@ import com.stocat.amumal.user.dto.LoginRequest;
 import com.stocat.amumal.user.dto.LoginResponse;
 import com.stocat.amumal.user.dto.SignUpRequest;
 import com.stocat.amumal.user.dto.SignUpResponse;
+import com.stocat.amumal.user.dto.UserResponse;
 import com.stocat.amumal.user.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -64,6 +65,19 @@ public class UserServiceImpl implements UserService {
         }
 
         return new LoginResponse(user.id());
+    }
+
+    @Override
+    public UserResponse getUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."));
+
+        return new UserResponse(
+                user.id(),
+                user.email(),
+                user.nickname(),
+                user.profileImage()
+        );
     }
 
     private void validate(SignUpRequest request) {

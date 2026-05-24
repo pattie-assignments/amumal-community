@@ -41,4 +41,10 @@ public class InMemoryUserRepository implements UserRepository {
                 .filter(user -> user.email().equals(email))
                 .findFirst();
     }
+
+    @Override
+    public Optional<User> findById(Long userId) {
+        // 존재하지 않으면 null, 회원이 존재하는 경우에만 User 데이터를 반환합니다.
+        return Optional.ofNullable(users.get(userId));
+    }
 }
