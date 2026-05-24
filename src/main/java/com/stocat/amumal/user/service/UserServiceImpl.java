@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
                 request.profileImage().trim()
         ));
 
-        return new SignUpResponse(savedUser.id());
+        return new SignUpResponse(savedUser.getId());
     }
 
     @Override
@@ -65,11 +65,11 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(request.email().trim())
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다."));
 
-        if (!user.password().equals(request.password())) {
+        if (!user.getPassword().equals(request.password())) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        return new LoginResponse(user.id());
+        return new LoginResponse(user.getId());
     }
 
     @Override
@@ -78,10 +78,10 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."));
 
         return new UserResponse(
-                user.id(),
-                user.email(),
-                user.nickname(),
-                user.profileImage()
+                user.getId(),
+                user.getEmail(),
+                user.getNickname(),
+                user.getProfileImage()
         );
     }
 
@@ -92,21 +92,21 @@ public class UserServiceImpl implements UserService {
 
         validateProfileUpdate(request, user);
 
-        String nickname = request.nickname() == null ? user.nickname() : request.nickname().trim();
-        String profileImage = request.profileImage() == null ? user.profileImage() : request.profileImage().trim();
+        // null이 아니라면(수정할 데이터를 받았다면) 수정
+        if (request.nickname() != null) {
+            user.setNickname(request.nickname().trim());
+        }
 
-        User updatedUser = userRepository.save(new User(
-                user.id(),
-                user.email(),
-                user.password(),
-                nickname,
-                profileImage
-        ));
+        if (request.profileImage() != null) {
+            user.setProfileImage(request.profileImage().trim());
+        }
+
+        User updatedUser = userRepository.save(user);
 
         return new UpdateProfileResponse(
-                updatedUser.id(),
-                updatedUser.nickname(),
-                updatedUser.profileImage()
+                updatedUser.getId(),
+                updatedUser.getNickname(),
+                updatedUser.getProfileImage()
         );
     }
 
@@ -119,13 +119,8 @@ public class UserServiceImpl implements UserService {
         // 비밀번호 업데이트를 위한 조건을 충족하는가? (비밀번호 형식, 중복 입력 성공 여부)
         validatePasswordUpdate(request);
 
-        userRepository.save(new User(
-                user.id(),
-                user.email(),
-                request.password(),
-                user.nickname(),
-                user.profileImage()
-        ));
+        user.setPassword(request.password());
+        userRepository.save(user);
     }
 
     private void validate(SignUpRequest request) {
@@ -203,7 +198,7 @@ public class UserServiceImpl implements UserService {
                 throw new ApiException(HttpStatus.BAD_REQUEST, "닉네임은 최대 10자 까지 작성 가능합니다.");
             }
 
-            if (!nickname.equals(user.nickname()) && userRepository.existsByNickname(nickname)) {
+            if (!nickname.equals(user.getNickname()) && userRepository.existsByNickname(nickname)) {
                 throw new ApiException(HttpStatus.CONFLICT, "중복된 닉네임 입니다.");
             }
         }

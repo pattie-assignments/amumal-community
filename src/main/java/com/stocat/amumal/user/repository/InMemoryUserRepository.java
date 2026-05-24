@@ -15,8 +15,9 @@ public class InMemoryUserRepository implements UserRepository {
 
     @Override
     public User save(User user) {
-        long id = user.id() == null ? ++sequence : user.id();
-        User savedUser = new User(id, user.email(), user.password(), user.nickname(), user.profileImage());
+        // id값 전달 받으면 사용, 미전달 받으면 기존에 머지막으로 생성된 id값에서 +1한 값을 사용
+        long id = user.getId() == null ? ++sequence : user.getId();
+        User savedUser = new User(id, user.getEmail(), user.getPassword(), user.getNickname(), user.getProfileImage());
         users.put(id, savedUser);
         return savedUser;
     }
@@ -25,20 +26,20 @@ public class InMemoryUserRepository implements UserRepository {
     public boolean existsByEmail(String email) {
         // 입력한 email 을 가진 유저가 하나라도 인메모리에 존재하면 true를 반환
         return users.values().stream()
-                .anyMatch(user -> user.email().equals(email));
+                .anyMatch(user -> user.getEmail().equals(email));
     }
 
     @Override
     public boolean existsByNickname(String nickname) {
         // 입력한 nickname 을 가진 유저가 하나라도 인메모리에 존재하면 true를 반환
         return users.values().stream()
-                .anyMatch(user -> user.nickname().equals(nickname));
+                .anyMatch(user -> user.getNickname().equals(nickname));
     }
 
     @Override
     public Optional<User> findByEmail(String email) {
         return users.values().stream()
-                .filter(user -> user.email().equals(email))
+                .filter(user -> user.getEmail().equals(email))
                 .findFirst();
     }
 
