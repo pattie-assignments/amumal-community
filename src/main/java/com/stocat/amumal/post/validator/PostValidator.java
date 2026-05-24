@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 public class PostValidator {
 
     public void validateCreatePost(CreatePostRequest request) {
-        validateUserId(request.userId());
         validateTitleAndContent(request.title(), request.content());
     }
 
@@ -24,12 +23,6 @@ public class PostValidator {
         validateTitle(request.title());
         validateContent(request.content());
         validateSingleImage(request.image());
-    }
-
-    private void validateUserId(Long userId) {
-        if (userId == null) {
-            throw new ApiException(ErrorCode.MISSING_USER_ID);
-        }
     }
 
     private void validateTitleAndContent(String title, String content) {

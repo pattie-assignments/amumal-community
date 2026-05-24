@@ -50,6 +50,16 @@ public class UserValidator {
         }
     }
 
+    public void validatePasswordUpdateConfirm(String password, String passwordConfirm) {
+        if (isBlank(passwordConfirm)) {
+            throw new ApiException(ErrorCode.EMPTY_PASSWORD_CONFIRM);
+        }
+
+        if (!password.equals(passwordConfirm)) {
+            throw new ApiException(ErrorCode.PASSWORD_UPDATE_CONFIRM_MISMATCH);
+        }
+    }
+
     public void validateNickname(String nickname) {
         if (isBlank(nickname)) {
             throw new ApiException(ErrorCode.EMPTY_NICKNAME);
