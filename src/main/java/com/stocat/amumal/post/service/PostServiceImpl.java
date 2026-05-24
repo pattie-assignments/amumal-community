@@ -30,14 +30,12 @@ public class PostServiceImpl implements PostService {
         userRepository.findById(request.userId())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."));
 
-        // TODO: 아이디값 생성을 repo에 위임
-        Post savedPost = postRepository.save(new Post(
-                null,
+        Post savedPost = postRepository.save(
                 request.userId(),
                 request.title().trim(),
                 request.content().trim(),
                 request.image() == null ? null : request.image().trim()
-        ));
+        );
 
         return new CreatePostResponse(
                 savedPost.getId(),

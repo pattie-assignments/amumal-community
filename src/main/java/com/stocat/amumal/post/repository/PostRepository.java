@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public interface PostRepository {
 
-    Post save(Post post);
+    Post save(Long userId, String title, String content, String image);
 
     Post update(Post post);
 
