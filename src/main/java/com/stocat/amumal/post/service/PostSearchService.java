@@ -7,7 +7,7 @@ import com.stocat.amumal.post.dto.GetPostsResponse;
 import com.stocat.amumal.post.dto.UpdatePostRequest;
 import com.stocat.amumal.post.dto.UpdatePostResponse;
 
-public interface PostService {
+public interface PostSearchService {
 
     CreatePostResponse createPost(Long userId, CreatePostRequest request);
 
