@@ -13,6 +13,20 @@ jobs:
   build: # 작업의 이름을 "build"로 정의합니다.
     runs-on: ubuntu-26.04
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: amumal
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     # 각 작업에서 실행할 단계(step)들을 정의합니다.
     steps:
       # 소스 코드를 체크아웃합니다.
